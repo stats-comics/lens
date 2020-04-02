@@ -10,7 +10,7 @@ const genChart = config => {
 
   const min = d3.min(config.data, d => d.value);
   const max = d3.max(config.data, d => d.value);
-  options.scale = [min, max];
+  options.scale = [0, max];
 
   for (let option in config) {
     options[option] = config[option];
@@ -84,6 +84,7 @@ const genChart = config => {
       .attr("class", "blend-mode-mask")
       .attr("width", width)
       .attr("height", height)
+      .attr("fill", selectedColor) // Fuck, how do I decouple this
       .style("mix-blend-mode", "lighten");
   }
 
@@ -96,8 +97,9 @@ const genChart = config => {
         brushCallback(selection, x, y);
       }
       d3.select(".selection")
+        .attr("fill", selectedColor)
         .attr("fill-opacity", 1)
-        .attr("stroke-width", "10")
+        .attr("stroke-width", "7")
         .style("mix-blend-mode", "lighten")
         .attr("stroke", "rgba(255,255,255,1)");
     }

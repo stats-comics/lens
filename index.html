@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <title>Scale Up & Down - Stats Comics</title>
     <link rel="stylesheet" href="base.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap"
@@ -21,8 +22,8 @@
       Generate Comic Panels
     </div>
     <p>
-      <span class="step">Step 2</span>Finalize your comic by dragging around and
-      resizing the lens
+      <span class="step">Step 2</span>Draw a lens on the left panel. Drag it
+      around and scale it.
     </p>
     <div class="charts">
       <div class="chart-wrapper dimmed">
@@ -32,7 +33,10 @@
         <div class="chart" id="chart-2"></div>
       </div>
     </div>
-    <p><span class="step">Step 3</span>Choose your favorite color</p>
+    <p>
+      <span class="step">Step 3</span>Choose your favorite color. Enjoy your
+      comics!
+    </p>
     <div class="colors"></div>
   </body>
 
@@ -70,10 +74,12 @@
     const go = () => {
       $("#chart-1").html("");
       $("#chart-2").html("");
+      let csv = $("textarea").val();
+      let columns = csv.split("\n")[0].split(",");
       let data = Object.assign(
-        d3.csvParse($("textarea").val(), ({ letter, frequency }) => ({
-          name: letter,
-          value: +frequency
+        d3.csvParse(csv, d => ({
+          name: d[columns[0]],
+          value: +d[columns[1]]
         }))
       );
 
