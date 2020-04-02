@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="base.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sen:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://d3js.org/d3.v5.js"></script>
+  </head>
+
+  <body>
+    <h1>Scale-Up,<br />Scale-Down.</h1>
+    <p><span class="step">Step 1</span>Paste below or upload your CSV data</p>
+    <textarea
+      placeholder="Paste your CSV data here. The CSV should match the two-columns format preset."
+    ></textarea>
+    <div id="go" class="button" onclick="go()" clickable>
+      Generate Comic Panels
+    </div>
+    <p>
+      <span class="step">Step 2</span>Finalize your comic by dragging around and
+      resizing the lens
+    </p>
+    <div class="charts">
+      <div class="chart-wrapper">
+        <div class="chart" id="chart-1"></div>
+        <div class="lens"></div>
+      </div>
+      <div class="chart-wrapper">
+        <div class="chart" id="chart-2"></div>
+      </div>
+    </div>
+  </body>
+
+  <script src="gen-chart.js"></script>
+  <script src="https://daybrush.com/scenejs/release/latest/dist/scene.js"></script>
+  <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+  <script>
+    let margin = { top: 30, right: 30, bottom: 30, left: 60 };
+    let height = 500;
+    let width = 500;
+
+    fetch("alphabet.csv")
+      .then(r => r.text())
+      .then(t => $("textarea").val(t));
+
+    const go = () => {
+      let data = Object.assign(
+        d3.csvParse($("textarea").val(), ({ letter, frequency }) => ({
+          name: letter,
+          value: +frequency
+        }))
+      );
+
+      genChart(data, "#chart-1");
+      genChart(data, "#chart-2", [0.02, 0.05]);
+
+      const frame = new Scene.Frame({});
+
+      const moveableElement = $(".lens")[0];
+      $(".lens").css("top", "60px");
+      const moveable = new Moveable(moveableElement.parentElement, {
+        target: moveableElement,
+        draggable: true,
+        resizable: true,
+        snappable: true,
+        throttleDrag: 1,
+        throttleResize: 1,
+        bounds: { left: 0, top: 0, right: 370, bottom: 374 }
+      })
+        .on("drag", ({ target, left, top, clientX, clientY, isPinch }) => {
+          frame.set("left", `${left}px`);
+          frame.set("top", `${top}px`);
+          setTransform(target);
+        })
+        .on(
+          "resize",
+          ({ target, width, height, clientX, clientY, isPinch }) => {
+            frame.set("width", `${width}px`);
+            frame.set("height", `${height}px`);
+            setTransform(target);
+          }
+        );
+
+      window.addEventListener("resize", () => {
+        moveable.updateRect();
+      });
+
+      function setTransform(target) {
+        target.style.cssText = frame.toCSS();
+      }
+    };
+  </script>
+</html>
