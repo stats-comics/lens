@@ -25,29 +25,51 @@
       resizing the lens
     </p>
     <div class="charts">
-      <div class="chart-wrapper">
+      <div class="chart-wrapper dimmed">
         <div class="chart" id="chart-1"></div>
-        <div class="lens"></div>
       </div>
       <div class="chart-wrapper">
         <div class="chart" id="chart-2"></div>
       </div>
     </div>
+    <p><span class="step">Step 3</span>Choose your favorite color</p>
+    <div class="colors"></div>
   </body>
 
   <script src="gen-chart.js"></script>
-  <script src="https://daybrush.com/scenejs/release/latest/dist/scene.js"></script>
-  <script src="https://daybrush.com/moveable/release/latest/dist/moveable.min.js"></script>
+  <script>
+    const colors = ["#ff4553", "#444", "#4553ff", "#bbbb45"];
+    let selectedColor;
+    const setColor = color => {
+      selectedColor = color;
+      $(".button").css("background", color);
+      $("rect.selection").attr("fill", color);
+      $("rect.blend-mode-mask").attr("fill", color);
+    };
+    const colorsContainer = $(".colors");
+    colors.forEach(color => {
+      let el = $(
+        `<label class="single-color" clickable style="background-color:${color}"><input type="radio" value="${color}" name="color"/></label>`
+      );
+      el.children().on("click", e => {
+        setColor(e.target.value);
+      });
+      colorsContainer.append(el);
+    });
+    setColor(colors[0]);
+  </script>
   <script>
     let margin = { top: 30, right: 30, bottom: 30, left: 60 };
-    let height = 500;
-    let width = 500;
+    let height = 400;
+    let width = 400;
 
     fetch("alphabet.csv")
       .then(r => r.text())
       .then(t => $("textarea").val(t));
 
     const go = () => {
+      $("#chart-1").html("");
+      $("#chart-2").html("");
       let data = Object.assign(
         d3.csvParse($("textarea").val(), ({ letter, frequency }) => ({
           name: letter,
@@ -55,43 +77,21 @@
         }))
       );
 
-      genChart(data, "#chart-1");
-      genChart(data, "#chart-2", [0.02, 0.05]);
-
-      const frame = new Scene.Frame({});
-
-      const moveableElement = $(".lens")[0];
-      $(".lens").css("top", "60px");
-      const moveable = new Moveable(moveableElement.parentElement, {
-        target: moveableElement,
-        draggable: true,
-        resizable: true,
-        snappable: true,
-        throttleDrag: 1,
-        throttleResize: 1,
-        bounds: { left: 0, top: 0, right: 370, bottom: 374 }
-      })
-        .on("drag", ({ target, left, top, clientX, clientY, isPinch }) => {
-          frame.set("left", `${left}px`);
-          frame.set("top", `${top}px`);
-          setTransform(target);
-        })
-        .on(
-          "resize",
-          ({ target, width, height, clientX, clientY, isPinch }) => {
-            frame.set("width", `${width}px`);
-            frame.set("height", `${height}px`);
-            setTransform(target);
-          }
-        );
-
-      window.addEventListener("resize", () => {
-        moveable.updateRect();
+      genChart({
+        data: data,
+        container: "#chart-1",
+        zoomable: true,
+        themeColor: selectedColor,
+        brushCallback: (selection, x, y) => {
+          const [[x0, y0], [x1, y1]] = selection;
+          genChart({
+            themeColor: selectedColor,
+            data: data,
+            container: "#chart-2",
+            scale: [y.invert(y1), y.invert(y0)]
+          });
+        }
       });
-
-      function setTransform(target) {
-        target.style.cssText = frame.toCSS();
-      }
     };
   </script>
 </html>
