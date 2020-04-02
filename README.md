@@ -1,2 +1,3 @@
-# altr
-Alternative Representation for Charts
+# lens
+
+Scale Up / Down for Charts
