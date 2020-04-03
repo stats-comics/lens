@@ -63,7 +63,7 @@ const genChart = config => {
 
   const rects = svg
     .append("g")
-    .attr("fill", "#555")
+    .attr("fill", "#222")
     .selectAll("rect")
     .data(data)
     .join("rect")
@@ -85,7 +85,7 @@ const genChart = config => {
       .attr("width", width)
       .attr("height", height)
       .attr("fill", selectedColor) // Fuck, how do I decouple this
-      .style("mix-blend-mode", "lighten");
+      .style("mix-blend-mode", "screen");
   }
 
   if (zoomable) {
@@ -100,7 +100,7 @@ const genChart = config => {
         .attr("fill", selectedColor)
         .attr("fill-opacity", 1)
         .attr("stroke-width", "7")
-        .style("mix-blend-mode", "lighten")
+        .style("mix-blend-mode", "screen")
         .attr("stroke", "rgba(255,255,255,1)");
     }
   }
